@@ -1,0 +1,11 @@
+/main
+*.exe
+*.out
+
+.env
+
+vendor/
+
+.idea/
+.vscode/
+*.swp

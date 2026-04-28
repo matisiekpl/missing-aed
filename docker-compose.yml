@@ -1,0 +1,9 @@
+name: missing-aed
+services:
+  app:
+    build: .
+    env_file:
+      - .env
+    restart: always
+    ports:
+      - "8473:3000"

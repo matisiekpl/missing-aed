@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Brakujące defibrylatory</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+    <style>
+        html, body { margin: 0; padding: 0; height: 100%; }
+        #map { width: 100%; height: 100%; }
+        .legend {
+            position: absolute; top: 12px; right: 12px;
+            background: white; padding: 10px 14px; border-radius: 6px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2); font-family: sans-serif;
+            font-size: 13px; z-index: 1000;
+        }
+        .legend strong { display: block; margin-bottom: 6px; }
+    </style>
+</head>
+<body>
+<div id="map"></div>
+<div class="legend">
+    <strong>Brakujące defibrylatory</strong>
+    <div id="status">Ładowanie…</div>
+</div>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+    const map = L.map('map').setView([52.0, 19.0], 6);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap'
+    }).addTo(map);
+
+    const status = document.getElementById('status');
+
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(position => {
+            const latitude = position.coords.latitude;
+            const longitude = position.coords.longitude;
+            map.setView([latitude, longitude], 14);
+            L.marker([latitude, longitude])
+                .addTo(map)
+                .bindPopup('Twoja lokalizacja')
+                .openPopup();
+        });
+    }
+
+    fetch('/api/missing-aeds')
+        .then(response => {
+            if (!response.ok) throw new Error('HTTP ' + response.status);
+            return response.json();
+        })
+        .then(items => {
+            status.textContent = `Znaleziono ${items.length} potencjalnych miejsc`;
+            const markerIcon = L.icon({
+                iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
+                shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+                iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34]
+            });
+            items.forEach(item => {
+                const popupHtml = `<strong>Potencjalne miejsce defibrylatora</strong><br>` +
+                    `${item.name || ''}<br>` +
+                    `${item.address || ''} ${item.city || ''}<br>` +
+                    `<em>${item.description || ''}</em>`;
+                L.marker([item.lat, item.lon], { icon: markerIcon })
+                    .addTo(map)
+                    .bindPopup(popupHtml);
+            });
+        })
+        .catch(err => {
+            status.textContent = 'Błąd: ' + err.message;
+        });
+</script>
+</body>
+</html>

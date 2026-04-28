@@ -30,7 +30,7 @@ pipeline {
 
         stage('Import to k3s containerd') {
             steps {
-                sh 'k3s ctr images import ${IMAGE_TAR}'
+                sh 'sudo k3s ctr images import ${IMAGE_TAR}'
             }
         }
 

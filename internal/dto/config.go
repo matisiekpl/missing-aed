@@ -10,6 +10,7 @@ type Config struct {
 	OsmGeojsonUrl      string
 	OsmRefreshInterval time.Duration
 	MatchRadiusMeters  float64
+	DSN                string
 }
 
 func NewConfig() Config {
@@ -17,6 +18,7 @@ func NewConfig() Config {
 		OsmGeojsonUrl:      getEnv("OSM_GEOJSON_URL", "https://openaedmap.org/api/v1/countries/PL.geojson"),
 		OsmRefreshInterval: getEnvDuration("OSM_REFRESH_INTERVAL", 3*time.Hour),
 		MatchRadiusMeters:  getEnvFloat("MATCH_RADIUS_METERS", 100),
+		DSN:                getEnv("DSN", ""),
 	}
 }
 

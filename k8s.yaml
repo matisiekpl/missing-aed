@@ -36,6 +36,8 @@ spec:
               value: "3h"
             - name: MATCH_RADIUS_METERS
               value: "100"
+            - name: DSN
+              value: "postgresql://postgres:bt55cW5yHq5UwqSa9oxoplTrQcZICLtP@feigned-kitty.pg.mateuszwozniak.com:5432/postgres?sslmode=require"
           readinessProbe:
             httpGet:
               path: /

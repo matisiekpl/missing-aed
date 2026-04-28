@@ -11,15 +11,19 @@ type Controllers interface {
 }
 
 type controllers struct {
-	aedController AedController
+	aedController     AedController
+	commentController CommentController
 }
 
 func NewControllers(services service.Services) Controllers {
 	return &controllers{
-		aedController: newAedController(services.Matcher()),
+		aedController:     newAedController(services.Matcher()),
+		commentController: newCommentController(services.Comment()),
 	}
 }
 
 func (c controllers) Route(e *echo.Echo) {
 	e.GET("/api/missing-aeds", c.aedController.Missing)
+	e.GET("/api/missing-aeds/:nodeID/comments", c.commentController.Index)
+	e.POST("/api/missing-aeds/:nodeID/comments", c.commentController.Store)
 }

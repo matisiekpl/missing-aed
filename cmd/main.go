@@ -10,9 +10,14 @@ import (
 	"github.com/labstack/echo/v5/middleware"
 	"github.com/sirupsen/logrus"
 
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
+
 	"github.com/mwozniak/missing-aed/internal/client"
 	"github.com/mwozniak/missing-aed/internal/controller"
 	"github.com/mwozniak/missing-aed/internal/dto"
+	"github.com/mwozniak/missing-aed/internal/model"
+	"github.com/mwozniak/missing-aed/internal/repository"
 	"github.com/mwozniak/missing-aed/internal/service"
 )
 
@@ -27,8 +32,18 @@ func main() {
 	}
 
 	config := dto.NewConfig()
+
+	db, err := gorm.Open(postgres.Open(config.DSN), &gorm.Config{})
+	if err != nil {
+		logrus.Panic(err)
+	}
+	if err := db.AutoMigrate(&model.Comment{}); err != nil {
+		logrus.Panic(err)
+	}
+
 	clients := client.NewClients(config)
-	services, err := service.NewServices(clients, config)
+	repositories := repository.NewRepositories(db)
+	services, err := service.NewServices(clients, repositories, config)
 	if err != nil {
 		logrus.Panic(err)
 	}

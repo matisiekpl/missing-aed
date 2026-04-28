@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Brakujące defibrylatory</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css"/>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css"/>
     <style>
         html, body { margin: 0; padding: 0; height: 100%; }
         #map { width: 100%; height: 100%; }
@@ -14,7 +16,11 @@
             box-shadow: 0 2px 8px rgba(0,0,0,0.2); font-family: sans-serif;
             font-size: 13px; z-index: 1000;
         }
+        .legend { max-width: 280px; line-height: 1.4; }
         .legend strong { display: block; margin-bottom: 6px; }
+        .legend .note { margin-top: 8px; padding-top: 8px; border-top: 1px solid #eee; color: #444; }
+        .legend a { color: #1976d2; text-decoration: none; }
+        .legend a:hover { text-decoration: underline; }
     </style>
 </head>
 <body>
@@ -22,8 +28,17 @@
 <div class="legend">
     <strong>Brakujące defibrylatory</strong>
     <div id="status">Ładowanie…</div>
+    <div class="note">
+        Jeżeli znajdziesz defibrylator, dodaj go do bazy przez aplikację
+        <a href="https://aedmapa.pl" target="_blank" rel="noopener">aedmapa.pl</a>.
+    </div>
+    <div class="note">
+        Kontakt: Mateusz Woźniak —
+        <a href="mailto:mateusz@aedmapa.pl">mateusz@aedmapa.pl</a>
+    </div>
 </div>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
 <script>
     const map = L.map('map').setView([52.0, 19.0], 6);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -56,15 +71,22 @@
                 shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
                 iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34]
             });
+            const cluster = L.markerClusterGroup({
+                chunkedLoading: true,
+                showCoverageOnHover: false,
+                spiderfyOnMaxZoom: true,
+                disableClusteringAtZoom: 17
+            });
             items.forEach(item => {
                 const popupHtml = `<strong>Potencjalne miejsce defibrylatora</strong><br>` +
                     `${item.name || ''}<br>` +
                     `${item.address || ''} ${item.city || ''}<br>` +
                     `<em>${item.description || ''}</em>`;
-                L.marker([item.lat, item.lon], { icon: markerIcon })
-                    .addTo(map)
-                    .bindPopup(popupHtml);
+                cluster.addLayer(
+                    L.marker([item.lat, item.lon], { icon: markerIcon }).bindPopup(popupHtml)
+                );
             });
+            map.addLayer(cluster);
         })
         .catch(err => {
             status.textContent = 'Błąd: ' + err.message;

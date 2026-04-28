@@ -1,0 +1,89 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: aed
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: missing-aed
+  namespace: aed
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: missing-aed
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  template:
+    metadata:
+      labels:
+        app: missing-aed
+    spec:
+      containers:
+        - name: missing-aed
+          image: missing-aed:latest
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 3000
+          env:
+            - name: OSM_GEOJSON_URL
+              value: "https://openaedmap.org/api/v1/countries/PL.geojson"
+            - name: OSM_REFRESH_INTERVAL
+              value: "3h"
+            - name: MATCH_RADIUS_METERS
+              value: "100"
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 3000
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 3000
+            initialDelaySeconds: 30
+            periodSeconds: 30
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: missing-aed
+  namespace: aed
+spec:
+  selector:
+    app: missing-aed
+  ports:
+    - name: http
+      port: 3000
+      targetPort: 3000
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: missing-aed-ingress
+  namespace: aed
+  annotations:
+    kubernetes.io/ingress.class: traefik
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+spec:
+  ingressClassName: traefik
+  tls:
+    - hosts:
+        - braki.aedmapa.pl
+      secretName: missing-aed-tls
+  rules:
+    - host: braki.aedmapa.pl
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: missing-aed
+                port:
+                  number: 3000

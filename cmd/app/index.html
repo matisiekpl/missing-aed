@@ -84,10 +84,16 @@
                 disableClusteringAtZoom: 17
             });
             items.forEach(item => {
+                const hasAddress = (item.address && item.address.trim()) || (item.city && item.city.trim());
+                const navUrl = `https://www.google.com/maps/dir/?api=1&destination=${item.lat},${item.lon}`;
+                const navButton = hasAddress
+                    ? `<br><a href="${navUrl}" target="_blank" rel="noopener" style="display:inline-block;margin-top:8px;padding:6px 10px;background:#1976d2;color:white;border-radius:4px;text-decoration:none;font-size:12px;">Nawiguj</a>`
+                    : '';
                 const popupHtml = `<strong>Potencjalne miejsce defibrylatora</strong><br>` +
                     `${item.name || ''}<br>` +
                     `${item.address || ''} ${item.city || ''}<br>` +
-                    `<em>${item.description || ''}</em>`;
+                    `<em>${item.description || ''}</em>` +
+                    navButton;
                 cluster.addLayer(
                     L.marker([item.lat, item.lon], { icon: markerIcon }).bindPopup(popupHtml)
                 );

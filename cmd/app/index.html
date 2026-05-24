@@ -1,164 +1,265 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pl">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Brakujące defibrylatory</title>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css"/>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css"/>
-    <!-- Privacy-friendly analytics by Plausible -->
-    <script async src="https://analytics.mateuszwozniak.com/js/pa-evdDW9680jQV9biX4-guf.js"></script>
-    <script>
-        window.plausible=window.plausible||function(){(plausible.q=plausible.q||[]).push(arguments)},plausible.init=plausible.init||function(i){plausible.o=i||{}};
-        plausible.init()
-    </script>
-    <style>
-        html, body { margin: 0; padding: 0; height: 100%; }
-        #map { width: 100%; height: 100%; }
-        .legend {
-            position: absolute; top: 12px; right: 12px;
-            background: white; padding: 10px 14px; border-radius: 6px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.2); font-family: sans-serif;
-            font-size: 13px; z-index: 1000;
-        }
-        .legend { max-width: 280px; line-height: 1.4; }
-        .legend strong { display: block; margin-bottom: 6px; }
-        .legend .note { margin-top: 8px; padding-top: 8px; border-top: 1px solid #eee; color: #444; }
-        .legend a { color: #1976d2; text-decoration: none; }
-        .legend a:hover { text-decoration: underline; }
-    </style>
-</head>
-<body>
-<div id="map"></div>
-<div class="legend">
-    <strong>Brakujące defibrylatory</strong>
-    <div id="status">Ładowanie…</div>
-    <div class="note">
-        Jeżeli znajdziesz defibrylator, dodaj go do bazy przez aplikację
-        <a href="https://aedmapa.pl" target="_blank" rel="noopener">aedmapa.pl</a>
-        lub bezpośrednio na
-        <a href="https://openaedmap.org/" target="_blank" rel="noopener">openaedmap.org</a>.
-    </div>
-    <div class="note">
-        Kontakt: Mateusz Woźniak —
-        <a href="mailto:mateusz@aedmapa.pl">mateusz@aedmapa.pl</a>
-    </div>
-</div>
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
-<script>
-    const map = L.map('map').setView([52.0, 19.0], 6);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; OpenStreetMap'
-    }).addTo(map);
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Brakujące defibrylatory</title>
+        <link
+            rel="stylesheet"
+            href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        />
+        <link
+            rel="stylesheet"
+            href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css"
+        />
+        <link
+            rel="stylesheet"
+            href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css"
+        />
+        <!-- Privacy-friendly analytics by Plausible -->
+        <script
+            async
+            src="https://analytics.mateuszwozniak.com/js/pa-evdDW9680jQV9biX4-guf.js"
+        ></script>
+        <script>
+            ((window.plausible =
+                window.plausible ||
+                function () {
+                    (plausible.q = plausible.q || []).push(arguments);
+                }),
+                (plausible.init =
+                    plausible.init ||
+                    function (i) {
+                        plausible.o = i || {};
+                    }));
+            plausible.init();
+        </script>
 
-    const status = document.getElementById('status');
+        <style>
+            html,
+            body {
+                margin: 0;
+                padding: 0;
+                height: 100%;
+            }
+            #map {
+                width: 100%;
+                height: 100%;
+            }
+            .legend {
+                position: absolute;
+                top: 12px;
+                right: 12px;
+                background: white;
+                padding: 10px 14px;
+                border-radius: 6px;
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+                font-family: sans-serif;
+                font-size: 13px;
+                z-index: 1000;
+            }
+            .legend {
+                max-width: 280px;
+                line-height: 1.4;
+            }
+            .legend strong {
+                display: block;
+                margin-bottom: 6px;
+            }
+            .legend .note {
+                margin-top: 8px;
+                padding-top: 8px;
+                border-top: 1px solid #eee;
+                color: #444;
+            }
+            .legend a {
+                color: #1976d2;
+                text-decoration: none;
+            }
+            .legend a:hover {
+                text-decoration: underline;
+            }
+        </style>
+    </head>
+    <body>
+        <div id="map"></div>
+        <div class="legend">
+            <strong>Brakujące defibrylatory</strong>
+            <div id="status">Ładowanie…</div>
+            <div class="note">
+                Jeżeli znajdziesz defibrylator, dodaj go do bazy przez aplikację
+                <a href="https://aedmapa.pl" target="_blank" rel="noopener"
+                    >aedmapa.pl</a
+                >
+                lub bezpośrednio na
+                <a href="https://openaedmap.org/" target="_blank" rel="noopener"
+                    >openaedmap.org</a
+                >.
+            </div>
+            <div class="note">
+                Kontakt: Mateusz Woźniak —
+                <a href="mailto:mateusz@aedmapa.pl">mateusz@aedmapa.pl</a>
+            </div>
+        </div>
+        <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+        <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+        <script>
+            const map = L.map("map").setView([52.0, 19.0], 6);
+            L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+                attribution: "&copy; OpenStreetMap",
+            }).addTo(map);
 
-    if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(position => {
-            const latitude = position.coords.latitude;
-            const longitude = position.coords.longitude;
-            map.setView([latitude, longitude], 14);
-            L.marker([latitude, longitude])
-                .addTo(map)
-                .bindPopup('Twoja lokalizacja')
-                .openPopup();
-        });
-    }
+            const status = document.getElementById("status");
 
-    function escapeHtml(text) {
-        const div = document.createElement('div');
-        div.textContent = text;
-        return div.innerHTML;
-    }
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition((position) => {
+                    const latitude = position.coords.latitude;
+                    const longitude = position.coords.longitude;
+                    map.setView([latitude, longitude], 14);
+                    L.marker([latitude, longitude])
+                        .addTo(map)
+                        .bindPopup("Twoja lokalizacja")
+                        .openPopup();
+                });
+            }
 
-    function renderComments(container, comments) {
-        if (!comments.length) {
-            container.innerHTML = '<em style="color:#888;">Brak komentarzy</em>';
-            return;
-        }
-        container.innerHTML = comments.map(comment => {
-            const date = new Date(comment.createdAt).toLocaleString('pl-PL');
-            return `<div style="margin-bottom:6px;padding:4px 6px;background:#f5f5f5;border-radius:3px;"><div style="color:#888;font-size:10px;">${date}</div>${escapeHtml(comment.content)}</div>`;
-        }).join('');
-    }
+            function escapeHtml(text) {
+                const div = document.createElement("div");
+                div.textContent = text;
+                return div.innerHTML;
+            }
 
-    function attachComments(nodeID, safeId) {
-        const container = document.getElementById(`comments-${safeId}`);
-        const input = document.getElementById(`comment-input-${safeId}`);
-        const button = document.getElementById(`comment-submit-${safeId}`);
-        if (!container || !input || !button) return;
-        const url = `/api/missing-aeds/${encodeURIComponent(nodeID)}/comments`;
-        fetch(url)
-            .then(response => response.ok ? response.json() : Promise.reject(response))
-            .then(comments => renderComments(container, comments))
-            .catch(() => { container.innerHTML = '<em style="color:#c00;">Błąd ładowania</em>'; });
-        button.onclick = () => {
-            const content = input.value.trim();
-            if (!content) return;
-            if (content.length > 200) return;
-            button.disabled = true;
-            fetch(url, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ content })
-            })
-                .then(response => response.ok ? response.json() : response.json().then(error => Promise.reject(error)))
-                .then(() => {
-                    input.value = '';
-                    return fetch(url).then(response => response.json()).then(comments => renderComments(container, comments));
+            function renderComments(container, comments) {
+                if (!comments.length) {
+                    container.innerHTML =
+                        '<em style="color:#888;">Brak komentarzy</em>';
+                    return;
+                }
+                container.innerHTML = comments
+                    .map((comment) => {
+                        const date = new Date(comment.createdAt).toLocaleString(
+                            "pl-PL",
+                        );
+                        return `<div style="margin-bottom:6px;padding:4px 6px;background:#f5f5f5;border-radius:3px;"><div style="color:#888;font-size:10px;">${date}</div>${escapeHtml(comment.content)}</div>`;
+                    })
+                    .join("");
+            }
+
+            function attachComments(nodeID, safeId) {
+                const container = document.getElementById(`comments-${safeId}`);
+                const input = document.getElementById(
+                    `comment-input-${safeId}`,
+                );
+                const button = document.getElementById(
+                    `comment-submit-${safeId}`,
+                );
+                if (!container || !input || !button) return;
+                const url = `/api/missing-aeds/${encodeURIComponent(nodeID)}/comments`;
+                fetch(url)
+                    .then((response) =>
+                        response.ok
+                            ? response.json()
+                            : Promise.reject(response),
+                    )
+                    .then((comments) => renderComments(container, comments))
+                    .catch(() => {
+                        container.innerHTML =
+                            '<em style="color:#c00;">Błąd ładowania</em>';
+                    });
+                button.onclick = () => {
+                    const content = input.value.trim();
+                    if (!content) return;
+                    if (content.length > 200) return;
+                    button.disabled = true;
+                    fetch(url, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ content }),
+                    })
+                        .then((response) =>
+                            response.ok
+                                ? response.json()
+                                : response
+                                      .json()
+                                      .then((error) => Promise.reject(error)),
+                        )
+                        .then(() => {
+                            input.value = "";
+                            return fetch(url)
+                                .then((response) => response.json())
+                                .then((comments) =>
+                                    renderComments(container, comments),
+                                );
+                        })
+                        .catch((error) => {
+                            alert((error && error.message) || "Błąd");
+                        })
+                        .finally(() => {
+                            button.disabled = false;
+                        });
+                };
+            }
+
+            fetch("/api/missing-aeds")
+                .then((response) => {
+                    if (!response.ok)
+                        throw new Error("HTTP " + response.status);
+                    return response.json();
                 })
-                .catch(error => { alert((error && error.message) || 'Błąd'); })
-                .finally(() => { button.disabled = false; });
-        };
-    }
-
-    fetch('/api/missing-aeds')
-        .then(response => {
-            if (!response.ok) throw new Error('HTTP ' + response.status);
-            return response.json();
-        })
-        .then(items => {
-            status.textContent = `Znaleziono ${items.length} potencjalnych miejsc`;
-            const markerIcon = L.icon({
-                iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
-                shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
-                iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34]
-            });
-            const cluster = L.markerClusterGroup({
-                chunkedLoading: true,
-                showCoverageOnHover: false,
-                spiderfyOnMaxZoom: true,
-                disableClusteringAtZoom: 17
-            });
-            items.forEach(item => {
-                const hasAddress = (item.address && item.address.trim()) || (item.city && item.city.trim());
-                const navUrl = `https://www.google.com/maps/dir/?api=1&destination=${item.lat},${item.lon}`;
-                const navButton = hasAddress
-                    ? `<br><a href="${navUrl}" target="_blank" rel="noopener" style="display:inline-block;margin-top:8px;padding:6px 10px;background:#1976d2;color:white;border-radius:4px;text-decoration:none;font-size:12px;">Nawiguj</a>`
-                    : '';
-                const safeId = String(item.id).replace(/[^a-zA-Z0-9_-]/g, '_');
-                const popupHtml = `<strong>Potencjalne miejsce defibrylatora</strong><br>` +
-                    `${item.name || ''}<br>` +
-                    `${item.address || ''} ${item.city || ''}<br>` +
-                    `<em>${item.description || ''}</em>` +
-                    navButton +
-                    `<div style="margin-top:10px;border-top:1px solid #eee;padding-top:8px;">` +
-                    `<strong style="font-size:12px;">Komentarze</strong>` +
-                    `<div id="comments-${safeId}" style="font-size:12px;max-height:140px;overflow-y:auto;margin:6px 0;">Ładowanie…</div>` +
-                    `<textarea id="comment-input-${safeId}" maxlength="200" rows="2" placeholder="Dodaj komentarz (max 200 znaków)" style="width:100%;box-sizing:border-box;font-size:12px;"></textarea>` +
-                    `<button type="button" id="comment-submit-${safeId}" style="margin-top:6px;padding:6px 10px;background:#1976d2;color:white;border:0;border-radius:4px;font-size:12px;cursor:pointer;">Wyślij</button>` +
-                    `</div>`;
-                const marker = L.marker([item.lat, item.lon], { icon: markerIcon }).bindPopup(popupHtml);
-                marker.on('popupopen', () => attachComments(item.id, safeId));
-                cluster.addLayer(marker);
-            });
-            map.addLayer(cluster);
-        })
-        .catch(err => {
-            status.textContent = 'Błąd: ' + err.message;
-        });
-</script>
-</body>
+                .then((items) => {
+                    status.textContent = `Znaleziono ${items.length} potencjalnych miejsc`;
+                    const markerIcon = L.icon({
+                        iconUrl:
+                            "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
+                        shadowUrl:
+                            "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
+                        iconSize: [25, 41],
+                        iconAnchor: [12, 41],
+                        popupAnchor: [1, -34],
+                    });
+                    const cluster = L.markerClusterGroup({
+                        chunkedLoading: true,
+                        showCoverageOnHover: false,
+                        spiderfyOnMaxZoom: true,
+                        disableClusteringAtZoom: 17,
+                    });
+                    items.forEach((item) => {
+                        const hasAddress =
+                            (item.address && item.address.trim()) ||
+                            (item.city && item.city.trim());
+                        const navUrl = `https://www.google.com/maps/dir/?api=1&destination=${item.lat},${item.lon}`;
+                        const navButton = hasAddress
+                            ? `<br><a href="${navUrl}" target="_blank" rel="noopener" style="display:inline-block;margin-top:8px;padding:6px 10px;background:#1976d2;color:white;border-radius:4px;text-decoration:none;font-size:12px;">Nawiguj</a>`
+                            : "";
+                        const safeId = String(item.id).replace(
+                            /[^a-zA-Z0-9_-]/g,
+                            "_",
+                        );
+                        const popupHtml =
+                            `<strong>Potencjalne miejsce defibrylatora</strong><br>` +
+                            `${item.name || ""}<br>` +
+                            `${item.address || ""} ${item.city || ""}<br>` +
+                            `<em>${item.description || ""}</em>` +
+                            navButton +
+                            `<div style="margin-top:10px;border-top:1px solid #eee;padding-top:8px;">` +
+                            `<strong style="font-size:12px;">Komentarze</strong>` +
+                            `<div id="comments-${safeId}" style="font-size:12px;max-height:140px;overflow-y:auto;margin:6px 0;">Ładowanie…</div>` +
+                            `<textarea id="comment-input-${safeId}" maxlength="200" rows="2" placeholder="Dodaj komentarz (max 200 znaków)" style="width:100%;box-sizing:border-box;font-size:12px;"></textarea>` +
+                            `<button type="button" id="comment-submit-${safeId}" style="margin-top:6px;padding:6px 10px;background:#1976d2;color:white;border:0;border-radius:4px;font-size:12px;cursor:pointer;">Wyślij</button>` +
+                            `</div>`;
+                        const marker = L.marker([item.lat, item.lon], {
+                            icon: markerIcon,
+                        }).bindPopup(popupHtml);
+                        marker.on("popupopen", () =>
+                            attachComments(item.id, safeId),
+                        );
+                        cluster.addLayer(marker);
+                    });
+                    map.addLayer(cluster);
+                })
+                .catch((err) => {
+                    status.textContent = "Błąd: " + err.message;
+                });
+        </script>
+    </body>
 </html>
